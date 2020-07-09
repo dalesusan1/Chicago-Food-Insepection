@@ -9,6 +9,7 @@ var result = []
 var button = d3.select("button#filter-btn");
 var resetButton = d3.select("button#reset-btn")
 
+
 // Define dropdown
 var dropdown = d3.select("#selDataset")
 
@@ -28,9 +29,36 @@ function ConvertResults (data) {
     return result
 }
 
+resetButton.on("click", function() {
+    clear();
+    clearDropDown('selDataset');
+});
+
+function clear() {
+    document.getElementById("sample-metadata").innerHTML= ''; 
+    document.getElementById("pie").innerHTML= ''; 
+    document.getElementById("bar").innerHTML= ''; 
+ }
+
+ function clearDropDown(id) {
+    var select = document.getElementById(id);
+    var length = select.options.length;
+    for (i = length-1; i >= 0; i--) {
+        select.options[i] = null;
+    }
+ }
+
+
+ 
+
 // Define filterFunctions
 
 function filterFunction (data) {
+    console.log('2222222', data);
+    risk = []
+    inspectionYear = []
+    result = []
+ 
     data.map((d) => {
         name = d.AKA_name
         result = ConvertResults(d)
@@ -129,13 +157,25 @@ function filterFunction (data) {
 
 // Read in data
 d3.csv("./updated_three_years.csv").then(function (data){
+    var filteredFacility
     console.log(data)    
 
     button.on("click", handleChange);
 
+    dropdown.on('change', () => {
+        clear();
+        console.log(dropdown.property("value"));
+        console.log(filteredFacility);
+        var test = filteredFacility.filter(d => d.Address.trim() === dropdown.property("value").trim());
+        console.log(test);
+        console.log('111111111');
+        filterFunction(test);
+    });
+
     // creating the function handleChange
     function handleChange() {
-
+        clear();
+        clearDropDown('selDataset');
         // prevent refreshing the page
         d3.event.preventDefault();
 
@@ -150,7 +190,8 @@ d3.csv("./updated_three_years.csv").then(function (data){
         // console.log(locationInputValue)
   
         // filter data by facility using filterFunction
-        var filteredFacility = data.filter(d => d.AKA_name.toLowerCase() === facilityInputValue.toLowerCase())
+        filteredFacility = data.filter(d => d.AKA_name.toLowerCase().includes(facilityInputValue.toLowerCase()))
+
         filterFunction(filteredFacility)
 
         // filtering by location and dropping duplicates
